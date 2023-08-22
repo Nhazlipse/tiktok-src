@@ -16,3 +16,8 @@ Tiktok downloader &amp; auto upload to reels facebook (with puppeteer).
 
 Note: before running the script, change the target tiktok url in the index.js file (line 10)
 > run script "node index.js"
+
+Recoded: 
+> run vtlink_exctractor.py for searching tiktok video urls
+
+> run auto.js for scheduled posts every 45 minutes
