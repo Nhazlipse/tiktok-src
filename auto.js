@@ -1,18 +1,18 @@
-import { TiktokDL } from './lib/ttapi.js'
-import { ReelsUpload } from './lib/browserHandler.js'
-import axios from 'axios'
-import ProgressBar from 'progress'
-import chalk from 'chalk'
-import path from 'path'
-import fs from 'fs'
+import { TiktokDL } from './lib/ttapi.js';
+import { ReelsUpload } from './lib/browserHandler.js';
+import axios from 'axios';
+import ProgressBar from 'progress';
+import chalk from 'chalk';
+import path from 'path';
+import fs from 'fs';
 
-const urlsFilePath = 'vt_url.txt'; 
+const urlsFilePath = 'vt_url.txt';
 const urls = fs.readFileSync(urlsFilePath, 'utf-8').trim().split('\n');
 
 async function downloadAndUpload(url) {
   try {
     const result = await TiktokDL(url);
-    if (result.status === "success") {
+    if (result && result.status === "success" && result.result) {
       const video = result.result.video[0];
       const namafile = result.result.id;
       const caption = result.result.description;
@@ -58,17 +58,25 @@ async function downloadAndUpload(url) {
 
 async function downloadAllVideosAndUpload() {
   for (const url of urls) {
-    const result = await TiktokDL(url);
-    const namafile = result.result.id;
-       
-    if (fs.existsSync(path.resolve('download', `${namafile}.mp4`))) {
-      console.log(`[ ${chalk.hex('#f12711')(namafile)} Sudah Di Download! ] ===== [${chalk.hex('#7F7FD5')('skipped')}]`);
-      continue; 
-    } else {
-      await downloadAndUpload(url);
+    try {
+      const result = await TiktokDL(url);
+      if (result && result.status === "success" && result.result) {
+        const namafile = result.result.id;
+
+        if (fs.existsSync(path.resolve('download', `${namafile}.mp4`))) {
+          console.log(`[ ${chalk.hex('#f12711')(namafile)} Sudah Di Download! ] ===== [${chalk.hex('#7F7FD5')('skipped')}]`);
+          continue;
+        } else {
+          await downloadAndUpload(url);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 2700000));
+      } else {
+        console.log(`[ERROR] Failed to fetch TikTok data for URL: ${url}`);
+      }
+    } catch (err) {
+      console.log(err);
     }
-       
-    await new Promise(resolve => setTimeout(resolve, 2700000)); 
   }
 }
 
